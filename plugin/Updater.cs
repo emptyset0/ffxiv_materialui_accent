@@ -454,7 +454,7 @@ namespace MaterialUI {
 					return;
 				
 				List<string> optionsNew = new List<string>();
-				string penumbraConfigPath = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/XIVLauncher/PluginConfigs/Penumbra.json");
+				string penumbraConfigPath = Path.GetFullPath(Path.GetDirectoryName(main.pluginInterface.ConfigFile.FullName) + "/Penumbra.json");
 				if(File.Exists(penumbraConfigPath)) {
 					dynamic penumbraData = JsonConvert.DeserializeObject(File.ReadAllText(penumbraConfigPath));
 					string penumbraPath = (string)penumbraData?.ModDirectory;
@@ -557,7 +557,7 @@ namespace MaterialUI {
 			if(main.penumbraIssue != null)
 				return false;
 			
-			string penumbraConfigPath = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/XIVLauncher/PluginConfigs/Penumbra.json");
+			string penumbraConfigPath = Path.GetFullPath(Path.GetDirectoryName(main.pluginInterface.ConfigFile.FullName) + "/Penumbra.json");
 			dynamic penumbraData = JsonConvert.DeserializeObject(File.ReadAllText(penumbraConfigPath));
 			string penumbraPath = (string)penumbraData?.ModDirectory;
 			

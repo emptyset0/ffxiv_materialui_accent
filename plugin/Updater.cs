@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using System.IO;
 using System.Numerics;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ImGuiScene;
@@ -154,6 +155,7 @@ namespace MaterialUI {
 		
 		private HttpClient httpClient;
 		private MaterialUI main;
+		private bool fuckGFW = false;
 		
 		// public Options options {get; private set;}
 		public Dir dirMaster {get; private set;}
@@ -205,8 +207,11 @@ namespace MaterialUI {
 				} if(file.type == "blob") {
 					for(int i = 0; i < path.Length - 1; i++)
 						curdir = curdir.dirs[path[i]];
-					
-					curdir.files[path[path.Length - 1]] = (file.sha, String.Format("https://raw.githubusercontent.com/{0}/master/{1}", repoName, file.path));
+
+					if (!fuckGFW)
+						curdir.files[path[path.Length - 1]] = (file.sha, String.Format("https://raw.githubusercontent.com/{0}/master/{1}", repoName, file.path));
+					else
+						curdir.files[path[path.Length - 1]] = (file.sha, String.Format("https://raw.fastgit.org/{0}/master/{1}", repoName, file.path));
 				}
 			}
 			
@@ -332,6 +337,8 @@ namespace MaterialUI {
 		public async Task LoadOptions() {
 			// Task.Run(async() => {
 				string resp = Regex.Replace(await httpClient.GetStringAsync(String.Format("https://raw.githubusercontent.com/{0}/master/options.json", repoAccent)), "//[^\n]*", "");
+				if (fuckGFW)
+					resp = Regex.Replace(await httpClient.GetStringAsync(String.Format("https://raw.fastgit.org/{0}/master/options.json", repoAccent)), "//[^\n]*", "");
 				Options options = JsonConvert.DeserializeObject<Options>(resp);
 				mods["base"] = new Mod(
 					"base",
@@ -363,7 +370,10 @@ namespace MaterialUI {
 		public async Task LoadMods() {
 			dirMods.Clear();
 			mods.Clear();
-			
+
+			fuckGFW = CheckGFWSettings();
+			PluginLog.LogDebug("fuckGFW = " + fuckGFW.ToString());
+
 			await LoadOptions();
 			mods["base"].dir = dirAccent;
 			dirMods["Material UI"] = dirAccent.GetPathDir("mods");
@@ -804,6 +814,30 @@ namespace MaterialUI {
 			
 			return true;
 		}
+
+		private bool CheckGFWSettings() {
+			var dalamudAssembly = typeof(Dalamud.ClientLanguage).Assembly;
+			var dalamudServiceType = dalamudAssembly?.GetType("Dalamud.Service`1");
+			var dalamudConfigType = dalamudAssembly?.GetType("Dalamud.Configuration.Internal.DalamudConfiguration");
+			var fuckGFWSettingsType = dalamudAssembly?.GetType("Dalamud.Configuration.FuckGFWSettings");
+			if (dalamudServiceType == null || dalamudConfigType == null || fuckGFWSettingsType == null) return false;
+
+			var dalamudConfig = dalamudServiceType.MakeGenericType(dalamudConfigType).GetMethod("Get")?.Invoke(null, null);
+
+			var fuckGFWSettingsProperty = dalamudConfig?.GetType().GetProperty("FuckGFWList");
+			if (fuckGFWSettingsProperty == null) return false;
+
+			var dalamudFuckGFWSettings = fuckGFWSettingsProperty?.GetValue(dalamudConfig);
+			if (dalamudFuckGFWSettings == null) return false;
+
+			foreach (object obj in (IEnumerable)dalamudFuckGFWSettings) {
+				var isEnabled = obj.GetType().GetProperty("IsEnabled")?.GetValue(obj);
+				if (isEnabled == null) continue;
+				if ((bool)isEnabled) return true;
+			}
+
+			return false;
+        }
 		
 		public void ApplyAsync() {
 			Task.Run(async() => {

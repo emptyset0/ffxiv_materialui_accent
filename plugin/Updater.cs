@@ -824,10 +824,7 @@ namespace MaterialUI {
 
 			var dalamudConfig = dalamudServiceType.MakeGenericType(dalamudConfigType).GetMethod("Get")?.Invoke(null, null);
 
-			var fuckGFWSettingsProperty = dalamudConfig?.GetType().GetProperty("FuckGFWList");
-			if (fuckGFWSettingsProperty == null) return false;
-
-			var dalamudFuckGFWSettings = fuckGFWSettingsProperty?.GetValue(dalamudConfig);
+			var dalamudFuckGFWSettings = dalamudConfig?.GetType().GetProperty("FuckGFWList")?.GetValue(dalamudConfig);
 			if (dalamudFuckGFWSettings == null) return false;
 
 			foreach (object obj in (IEnumerable)dalamudFuckGFWSettings) {

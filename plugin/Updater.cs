@@ -448,12 +448,12 @@ namespace MaterialUI {
 					return;
 				
 				main.ui.ShowNotice("Loading " + repoMaster);
-				string resp = await httpClient.GetStringAsync(String.Format("https://api.github.com/repos/{0}/git/trees/master?recursive=1", repoMaster));
+				string resp = await httpClient.GetStringAsync(String.Format("https://muddy-shape-1153.a08381.workers.dev/repos/{0}/git/trees/master?recursive=1", repoMaster));
 				Repo data = JsonConvert.DeserializeObject<Repo>(resp);
 				dirMaster = PopulateDir(data, repoMaster);
 				
 				main.ui.ShowNotice("Loading " + repoAccent);
-				resp = await httpClient.GetStringAsync(String.Format("https://api.github.com/repos/{0}/git/trees/master?recursive=1", repoAccent));
+				resp = await httpClient.GetStringAsync(String.Format("https://muddy-shape-1153.a08381.workers.dev/repos/{0}/git/trees/master?recursive=1", repoAccent));
 				data = JsonConvert.DeserializeObject<Repo>(resp);
 				dirAccent = PopulateDir(data, repoAccent);
 				
